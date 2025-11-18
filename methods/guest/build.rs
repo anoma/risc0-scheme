@@ -10,5 +10,10 @@ fn main() {
     config.parse.include = Some(vec!["scheme-core".to_string()]);
     cbindgen::generate_with_config(&crate_dir, config)
       .unwrap()
-      .write_to_file("target/scheme.h");
+        .write_to_file("target/scheme.h");
+
+    cc::Build::new()
+        .file("src/main.c")
+        .compile("main");
+    println!("cargo::rerun-if-changed=src/main.c");
 }

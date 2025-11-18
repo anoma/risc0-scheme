@@ -8,8 +8,9 @@ pub extern "C" fn read_sexpr() -> Box<Sexpr> {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn commit_sexpr(sexpr: Box<Sexpr>) {
-    env::commit(&sexpr)
+pub extern "C" fn commit_sexpr(sexpr: &Sexpr) -> &Sexpr {
+    env::commit(sexpr);
+    sexpr
 }
 
 #[unsafe(no_mangle)]

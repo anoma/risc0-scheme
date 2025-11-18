@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
-#[repr(C)]
 pub enum Sexpr {
     Integer(i32),
     String(String),
