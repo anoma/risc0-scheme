@@ -46,8 +46,8 @@ fn main() {
 
     // For example:
     let output: Sexpr = receipt.journal.decode().unwrap();
-    println!("Input: {:?}", input);
-    println!("Output: {:?}", output);
+    println!("Input: {}", input);
+    println!("Output: {}", output);
 
     // The receipt was verified at the end of proving, but the below code is an
     // example of how someone else could verify this receipt.
