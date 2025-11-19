@@ -19,18 +19,18 @@ pub extern "C" fn cons(car: &Sexpr, cdr: &Sexpr) -> Box<Sexpr> {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn car(sexpr: &Sexpr) -> Box<Sexpr> {
+pub extern "C" fn car(sexpr: &Sexpr) -> &Sexpr {
     if let Sexpr::Cons(hd, _tl) = sexpr {
-        hd.clone()
+        hd
     } else {
         panic!("not a pair")
     }
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn cdr(sexpr: &Sexpr) -> Box<Sexpr> {
+pub extern "C" fn cdr(sexpr: &Sexpr) -> &Sexpr {
     if let Sexpr::Cons(_hd, tl) = sexpr {
-        tl.clone()
+        tl
     } else {
         panic!("not a pair")
     }
@@ -85,8 +85,8 @@ pub extern "C" fn integer(value: i32) -> Box<Sexpr> {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn null() -> Box<Sexpr> {
-    Box::new(Sexpr::Null)
+pub extern "C" fn null() -> &'static Sexpr {
+    &Sexpr::Null
 }
 
 #[unsafe(no_mangle)]

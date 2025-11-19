@@ -23,7 +23,7 @@ fn main() {
     // ExecutorEnvBuilder::build().
 
     // For example:
-    let input: Sexpr = Sexpr::from(15 * i32::pow(2, 27) + 1);
+    let input: Sexpr = Sexpr::from((0..100).map(|x| Sexpr::from(2*x+1)).collect::<Vec<_>>());
     let env = ExecutorEnv::builder()
         .write(&input)
         .unwrap()
