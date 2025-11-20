@@ -2,7 +2,6 @@
 // The ELF is used for proving and the ID is used for verification.
 use methods::{METHOD_ELF, METHOD_ID};
 use risc0_zkvm::{default_prover, ExecutorEnv};
-use scheme_core::Sexpr;
 
 fn main() {
     // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
@@ -23,7 +22,7 @@ fn main() {
     // ExecutorEnvBuilder::build().
 
     // For example:
-    let input: Sexpr = Sexpr::from((0..100).map(|x| Sexpr::from(2 * x + 1)).collect::<Vec<_>>());
+    let input: Vec::<_> = (0..100).map(|x| 2 * x + 1).collect();
     let env = ExecutorEnv::builder()
         .write(&input)
         .unwrap()
@@ -43,8 +42,8 @@ fn main() {
     // TODO: Implement code for retrieving receipt journal here.
 
     // For example:
-    let output: Sexpr = receipt.journal.decode().unwrap();
-    println!("Input: {}", input);
+    let output: u32 = receipt.journal.decode().unwrap();
+    println!("Input: {:?}", input);
     println!("Output: {}", output);
 
     // The receipt was verified at the end of proving, but the below code is an
