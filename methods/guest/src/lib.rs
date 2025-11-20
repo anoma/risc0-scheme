@@ -37,18 +37,20 @@ pub extern "C" fn cdr(sexpr: &Sexpr) -> &Sexpr {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn set_car(sexpr: &mut Sexpr, new_hd: &Sexpr) {
+pub extern "C" fn set_car<'a>(sexpr: &mut Sexpr, new_hd: &'a Sexpr) -> &'a Sexpr {
     if let Sexpr::Cons(hd, _tl) = sexpr {
-        *hd = Box::new(new_hd.clone())
+        *hd = Box::new(new_hd.clone());
+        new_hd
     } else {
         panic!("not a pair")
     }
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn set_cdr(sexpr: &mut Sexpr, new_tl: &Sexpr) {
+pub extern "C" fn set_cdr<'a>(sexpr: &mut Sexpr, new_tl: &'a Sexpr) -> &'a Sexpr {
     if let Sexpr::Cons(_hd, tl) = sexpr {
-        *tl = Box::new(new_tl.clone())
+        *tl = Box::new(new_tl.clone());
+        new_tl
     } else {
         panic!("not a pair")
     }
@@ -75,8 +77,9 @@ pub extern "C" fn is_string(sexpr: &Sexpr) -> bool {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn drop(sexpr: Box<Sexpr>) {
-    std::mem::drop(sexpr)
+pub extern "C" fn drop_sexpr(sexpr: Box<Sexpr>) -> u32 {
+    std::mem::drop(sexpr);
+    0
 }
 
 #[unsafe(no_mangle)]
@@ -116,11 +119,67 @@ pub extern "C" fn alloc_string(sexpr: &Sexpr) -> *mut c_char {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn drop_string(s: *mut c_char) {
-    std::mem::drop(unsafe { CString::from_raw(s)})
+pub extern "C" fn drop_string(s: *mut c_char) -> u32 {
+    std::mem::drop(unsafe { CString::from_raw(s)});
+    0
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn is_equal(sexpr1: &Sexpr, sexpr2: &Sexpr) -> bool {
     sexpr1 == sexpr2
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn read_vector() -> Box<Vec<u32>> {
+    env::read()
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn commit_vector(vec: &Vec<u32>) -> &Vec<u32> {
+    env::commit(vec);
+    vec
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn make_vector(k: u32) -> Box<Vec<u32>> {
+    Box::new(vec![0; k.try_into().expect("specified vector length too large")])
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn vector_length(vec: &Vec<u32>) -> u32 {
+    vec.len().try_into().expect("specified vector is too large")
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn vector_ref(vec: &Vec<u32>, k: u32) -> u32 {
+    *vec.get(usize::try_from(k).expect("specified index too large")).expect("specified index is invalid")
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn vector_set(vec: &mut Vec<u32>, k: u32, obj: u32) -> u32 {
+    *vec.get_mut(usize::try_from(k).expect("specified index too large")).expect("specified index is invalid") = obj;
+    obj
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn vector_fill(vec: &mut Vec<u32>, fill: u32) -> u32 {
+    vec.fill(fill);
+    fill
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn drop_vector(vec: Box<Vec<u32>>) -> u32 {
+    std::mem::drop(vec);
+    0
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn read_integer() -> u32 {
+    env::read()
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn commit_integer(int: u32) -> u32 {
+    env::commit(&int);
+    int
 }
