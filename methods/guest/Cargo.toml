@@ -11,4 +11,4 @@ scheme-core = { path = "../../core" }
 
 [build-dependencies]
 cbindgen = "0.29.2"
-cc = "1.0"
+cc = "1.2.46"

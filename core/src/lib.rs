@@ -34,21 +34,21 @@ impl From<String> for Sexpr {
 impl fmt::Display for Sexpr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Sexpr::Integer(int) => write!(f, "{}", int),
-            Sexpr::String(string) => write!(f, "\"{}\"", string),
+            Sexpr::Integer(int) => write!(f, "{int}"),
+            Sexpr::String(string) => write!(f, "\"{string}\""),
             Sexpr::Null => write!(f, "()"),
             Sexpr::Cons(hd, tl) => {
-                write!(f, "({}", hd)?;
+                write!(f, "({hd}")?;
                 let mut pair = &**tl;
                 while let Sexpr::Cons(hd, tl) = pair {
-                    write!(f, " {}", hd)?;
-                    pair = &*tl;
+                    write!(f, " {hd}")?;
+                    pair = tl;
                 }
                 if pair != &Sexpr::Null {
-                    write!(f, " . {}", pair)?;
+                    write!(f, " . {pair}")?;
                 }
                 write!(f, ")")
-            },
+            }
         }
     }
 }
