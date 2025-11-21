@@ -3,6 +3,11 @@ use scheme_core::Sexpr;
 use std::ffi::{c_char, CStr, CString};
 
 #[unsafe(no_mangle)]
+pub unsafe extern "C" fn panic(ptr: *const c_char) -> u32 {
+    panic!("{}", CStr::from_ptr(ptr).to_str().expect("invalid C string"))
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn read_sexpr() -> Box<Sexpr> {
     env::read()
 }
