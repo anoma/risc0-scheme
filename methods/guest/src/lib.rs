@@ -42,6 +42,24 @@ pub extern "C" fn cdr(sexpr: &Sexpr) -> &Sexpr {
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn car_field(sexpr: &Sexpr) -> &Box<Sexpr> {
+    if let Sexpr::Cons(hd, _tl) = sexpr {
+        hd
+    } else {
+        panic!("not a pair")
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cdr_field(sexpr: &Sexpr) -> &Box<Sexpr> {
+    if let Sexpr::Cons(_hd, tl) = sexpr {
+        tl
+    } else {
+        panic!("not a pair")
+    }
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn set_car<'a>(sexpr: &mut Sexpr, new_hd: &'a Sexpr) -> &'a Sexpr {
     if let Sexpr::Cons(hd, _tl) = sexpr {
         *hd = Box::new(new_hd.clone());
@@ -187,4 +205,21 @@ pub extern "C" fn read_integer() -> u32 {
 pub extern "C" fn commit_integer(int: u32) -> u32 {
     env::commit(&int);
     int
+}
+
+pub struct T;
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct U(u32);
+
+#[unsafe(no_mangle)]
+pub extern "C" fn get(obj: &T, accessor: extern "C" fn(&T) -> &U) -> U {
+    *accessor(obj)
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn put(obj: &mut T, mutator: extern "C" fn(&mut T) -> &mut U, val: U) -> &mut T {
+    *mutator(obj) = val;
+    obj
 }
