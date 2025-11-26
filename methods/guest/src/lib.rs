@@ -41,8 +41,7 @@ pub extern "C" fn cdr(sexpr: &Sexpr) -> &Sexpr {
     }
 }
 
-#[unsafe(no_mangle)]
-pub extern "C" fn car_field(sexpr: &Sexpr) -> &Box<Sexpr> {
+fn car_accessor(sexpr: &Sexpr) -> &Box<Sexpr> {
     if let Sexpr::Cons(hd, _tl) = sexpr {
         hd
     } else {
@@ -50,13 +49,40 @@ pub extern "C" fn car_field(sexpr: &Sexpr) -> &Box<Sexpr> {
     }
 }
 
+fn car_mutator(sexpr: &Sexpr, new_hd: &Sexpr) -> Box<Sexpr> {
+    if let Sexpr::Cons(_hd, tl) = &sexpr {
+        Box::new(Sexpr::Cons(Box::new(new_hd.clone()), tl.clone()))
+    } else {
+        panic!("not a pair")
+    }
+}
+
 #[unsafe(no_mangle)]
-pub extern "C" fn cdr_field(sexpr: &Sexpr) -> &Box<Sexpr> {
+pub extern "C" fn car_field<'a>(accessor: &mut fn(&Sexpr) -> &Box<Sexpr>, mutator: &mut fn(&Sexpr, &Sexpr) -> Box<Sexpr>)  {
+    *accessor = car_accessor;
+    *mutator = car_mutator;
+}
+
+fn cdr_accessor(sexpr: &Sexpr) -> &Box<Sexpr> {
     if let Sexpr::Cons(_hd, tl) = sexpr {
         tl
     } else {
         panic!("not a pair")
     }
+}
+
+fn cdr_mutator(sexpr: &Sexpr, new_tl: &Sexpr) -> Box<Sexpr> {
+    if let Sexpr::Cons(hd, _tl) = &sexpr {
+        Box::new(Sexpr::Cons(hd.clone(), Box::new(new_tl.clone())))
+    } else {
+        panic!("not a pair")
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cdr_field(accessor: &mut fn(&Sexpr) -> &Box<Sexpr>, mutator: &mut fn(&Sexpr, &Sexpr) -> Box<Sexpr>) {
+    *accessor = cdr_accessor;
+    *mutator = cdr_mutator;
 }
 
 #[unsafe(no_mangle)]
@@ -213,13 +239,26 @@ pub struct T;
 #[derive(Clone, Copy)]
 pub struct U(u32);
 
+fn undefined_accessor(_: &T) -> &U {
+    panic!("accessor undefined")
+}
+
+fn undefined_mutator(_: &T, _: &U) -> Box<T> {
+    panic!("mutator undefined")
+}
+
 #[unsafe(no_mangle)]
-pub extern "C" fn get(obj: &T, accessor: extern "C" fn(&T) -> &U) -> U {
+pub extern "C" fn get<'a>(obj: &'a T, field: extern "C" fn(&mut fn(&T) -> &U, &mut fn(&T, &U) -> Box<T>)) -> U {
+    let mut accessor: fn(&T) -> &U = undefined_accessor;
+    let mut mutator: fn(&T, &U) -> Box<T> = undefined_mutator;
+    field(&mut accessor, &mut mutator);
     *accessor(obj)
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn put(obj: &mut T, mutator: extern "C" fn(&mut T) -> &mut U, val: U) -> &mut T {
-    *mutator(obj) = val;
-    obj
+pub extern "C" fn put<'a>(obj: &T, field: extern "C" fn(&mut fn(&T) -> &U, &mut fn(&T, &U) -> Box<T>), val: &U) -> Box<T> {
+    let mut accessor: fn(&T) -> &U = undefined_accessor;
+    let mut mutator: fn(&T, &U) -> Box<T> = undefined_mutator;
+    field(&mut accessor, &mut mutator);
+    mutator(obj, val)
 }
